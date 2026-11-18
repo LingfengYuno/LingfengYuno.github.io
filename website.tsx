@@ -82,7 +82,7 @@ export default function Website({
   async function loadContent() {
     setLoadState("loading");
     try {
-      const response = await fetch("/content.json");
+      const response = await fetch("/content.json", { cache: "no-cache" });
       if (!response.ok) throw new Error();
       const data = (await response.json()) as {
         posts: Post[];
