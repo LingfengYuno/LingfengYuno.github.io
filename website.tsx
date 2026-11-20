@@ -2,35 +2,11 @@
 
 import { useEffect, useRef, useState } from "react";
 import CharacterProfile from "./character-profile";
+import { articlePath, posts, profile, type Post } from "./site";
 import { gameScreens, characterImages, artworkImages } from "./gallery";
 
 type View = "home" | "works" | "about" | "read" | "character";
 type Category = "intro" | "log" | "thought" | "resource";
-export type Post = {
-  id: string;
-  category: "log" | "thought" | "resource";
-  title: string;
-  body: string;
-  image: string;
-  date: string;
-  published?: number;
-};
-type Profile = {
-  bio: string;
-  experience: string;
-  qq: string;
-  email: string;
-  gameIntro: string;
-  gameUrl: string;
-};
-const emptyProfile: Profile = {
-  bio: "",
-  experience: "",
-  qq: "",
-  email: "",
-  gameIntro: "",
-  gameUrl: "",
-};
 const categories: Record<Category, string> = {
   intro: "作品介绍",
   log: "开发日志",
@@ -61,55 +37,35 @@ function TextBlocks({ text }: { text: string }) {
 export default function Website({
   view = "home",
   characterSlug = "kk",
+  articleId = "",
 }: {
   view?: View;
   characterSlug?: "kk" | "xinyi";
+  articleId?: string;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [profile, setProfile] = useState<Profile>(emptyProfile);
-  const [loadState, setLoadState] = useState<"loading" | "ready" | "error">(
-    "loading",
-  );
   const [tab, setTab] = useState<Category>("intro");
   const [image, setImage] = useState<{ src: string; caption: string } | null>(
     null,
   );
-  const [articleId, setArticleId] = useState("");
   const [copyState, setCopyState] = useState("");
   const dialog = useRef<HTMLDialogElement>(null);
 
-  async function loadContent() {
-    setLoadState("loading");
-    try {
-      const response = await fetch("/content.json", { cache: "no-cache" });
-      if (!response.ok) throw new Error();
-      const data = (await response.json()) as {
-        posts: Post[];
-        profile: Profile;
-      };
-      setPosts(data.posts);
-      setProfile(data.profile);
-      setLoadState("ready");
-    } catch {
-      setLoadState("error");
-    }
-  }
   useEffect(() => {
-    loadContent();
-    const params = new URLSearchParams(location.search);
-    const selected = params.get("tab");
-    if (selected && selected in categories) setTab(selected as Category);
-    setArticleId(params.get("id") || "");
-  }, []);
+    if (view !== "works") return;
+    const selected = new URLSearchParams(location.search).get("tab");
+    if (selected && Object.hasOwn(categories, selected)) {
+      setTab(selected as Category);
+    }
+  }, [view]);
   useEffect(() => {
     if (image) dialog.current?.showModal();
     else dialog.current?.close();
   }, [image]);
   useEffect(() => {
-    if (loadState !== "ready" || !location.hash) return;
+    if (!location.hash) return;
     document.getElementById(location.hash.slice(1))?.scrollIntoView();
-  }, [loadState]);
+  }, []);
   useEffect(() => {
     if (!menuOpen) return;
     const previous = document.body.style.overflow;
@@ -126,7 +82,7 @@ export default function Website({
 
   function chooseTab(next: Category) {
     setTab(next);
-    history.replaceState(null, "", `/works?tab=${next}`);
+    history.replaceState(null, "", `/works/?tab=${next}`);
   }
   async function copyQQ() {
     try {
@@ -143,11 +99,11 @@ export default function Website({
   const nav = [
     { href: "/", label: "首页", active: view === "home" },
     {
-      href: "/works",
+      href: "/works/",
       label: "我的作品",
       active: view === "works" || view === "read" || view === "character",
     },
-    { href: "/about", label: "关于我", active: view === "about" },
+    { href: "/about/", label: "关于我", active: view === "about" },
   ];
 
   return (
@@ -227,7 +183,7 @@ export default function Website({
                   <br className="desktop-break" />
                   还有一路走来的点滴。很高兴在这里遇见你。
                 </p>
-                <a href="/works" className="button primary">
+                <a href="/works/" className="button primary">
                   看看我的作品 <Arrow />
                 </a>
               </div>
@@ -255,7 +211,7 @@ export default function Website({
                 <h2 id="featured-heading">从这里，走进故事</h2>
                 <span className="muted">我的游戏作品</span>
               </div>
-              <a className="featured-art" href="/works">
+              <a className="featured-art" href="/works/">
                 <img
                   src="/images/riverside.webp"
                   alt="《无法抵达的现在》游戏CG，两位角色在护城河边奔跑"
@@ -271,14 +227,14 @@ export default function Website({
                 <div>
                   <p className="eyebrow">剧情游戏</p>
                   <h3>
-                    <a href="/works">无法抵达的现在</a>
+                    <a href="/works/">无法抵达的现在</a>
                   </h3>
                 </div>
                 <div className="feature-actions">
-                  <a href="/works" className="text-link">
+                  <a href="/works/" className="text-link">
                     认识这个作品 <Arrow />
                   </a>
-                  <a href="/works#playtest" className="text-link">
+                  <a href="/works/#playtest" className="text-link">
                     加入QQ群试玩 <Arrow />
                   </a>
                 </div>
@@ -287,15 +243,11 @@ export default function Website({
             <section className="updates-section">
               <div className="section-heading">
                 <h2>创作路上的记录</h2>
-                <a href="/works?tab=log" className="text-link">
+                <a href="/works/?tab=log" className="text-link">
                   全部记录 <Arrow />
                 </a>
               </div>
-              {loadState === "loading" ? (
-                <ContentLoading />
-              ) : loadState === "error" ? (
-                <LoadError retry={loadContent} />
-              ) : posts.filter((p) => p.category !== "resource").length ? (
+              {posts.filter((p) => p.category !== "resource").length ? (
                 <PostList
                   posts={posts
                     .filter((p) => p.category !== "resource")
@@ -311,7 +263,7 @@ export default function Website({
                     <p>开发日志与创作感悟，会慢慢写在这里。</p>
                   </div>
                   <a
-                    href="/works?tab=log"
+                    href="/works/?tab=log"
                     className="round-link"
                     aria-label="查看开发日志"
                   >
@@ -334,7 +286,7 @@ export default function Website({
                   {profile.bio.split("\n")[0] ||
                     "如果你也对游戏、故事和创作感兴趣，欢迎来坐坐。"}
                 </p>
-                <a href="/about" className="text-link">
+                <a href="/about/" className="text-link">
                   认识凌风Yuno <Arrow />
                 </a>
               </div>
@@ -407,124 +359,124 @@ export default function Website({
                   </button>
                 ))}
               </div>
-              <div
-                className="work-panel"
-                role="tabpanel"
-                id={`panel-${tab}`}
-                aria-labelledby={`tab-${tab}`}
-                tabIndex={0}
-              >
-                {tab === "intro" ? (
-                  <>
-                    <div className="project-intro">
-                      <div className="story-visual">
-                        <h3>关于这个故事</h3>
-                        <img
-                          className="story-illustration"
-                          src="/images/kk-interview.webp"
-                          alt="kk侧身站立的全身立绘"
-                          width="393"
-                          height="1415"
-                          loading="lazy"
-                        />
+              {(Object.keys(categories) as Category[]).map((panel) => (
+                <div
+                  key={panel}
+                  className="work-panel"
+                  role="tabpanel"
+                  id={`panel-${panel}`}
+                  aria-labelledby={`tab-${panel}`}
+                  hidden={panel !== tab}
+                  tabIndex={0}
+                >
+                  {panel === "intro" ? (
+                    <>
+                      <div className="project-intro">
+                        <div className="story-visual">
+                          <h3>关于这个故事</h3>
+                          <img
+                            className="story-illustration"
+                            src="/images/kk-interview.webp"
+                            alt="kk侧身站立的全身立绘"
+                            width="393"
+                            height="1415"
+                            loading="lazy"
+                          />
+                        </div>
+                        <div>
+                          {profile.gameIntro ? (
+                            <TextBlocks text={profile.gameIntro} />
+                          ) : (
+                            <p className="empty-note">作品介绍待补充。</p>
+                          )}
+                          <dl className="project-facts">
+                            <div>
+                              <dt>作品类型</dt>
+                              <dd>剧情游戏</dd>
+                            </div>
+                            <div>
+                              <dt>创作者</dt>
+                              <dd>凌风Yuno</dd>
+                            </div>
+                          </dl>
+                        </div>
                       </div>
-                      <div>
-                        {profile.gameIntro ? (
-                          <TextBlocks text={profile.gameIntro} />
-                        ) : (
-                          <p className="empty-note">作品介绍待补充。</p>
-                        )}
-                        <dl className="project-facts">
-                          <div>
-                            <dt>作品类型</dt>
-                            <dd>剧情游戏</dd>
-                          </div>
-                          <div>
-                            <dt>创作者</dt>
-                            <dd>凌风Yuno</dd>
-                          </div>
-                        </dl>
+                      <div className="character-section">
+                        <div className="section-heading">
+                          <h3>故事中的她们</h3>
+                          <span className="muted">点击查看人物档案</span>
+                        </div>
+                        <div className="characters">
+                          <Character name="kk" base="kk" />
+                          <Character name="徐欣怡" base="xinyi" />
+                        </div>
                       </div>
-                    </div>
-                    <div className="character-section">
-                      <div className="section-heading">
-                        <h3>故事中的她们</h3>
-                        <span className="muted">点击查看人物档案</span>
+                    </>
+                  ) : panel === "resource" ? (
+                    <>
+                      <div className="resource-heading">
+                        <h3>故事的片段</h3>
+                        <p>游戏截图、CG与角色立绘，一起看看这个世界的模样。</p>
                       </div>
-                      <div className="characters">
-                        <Character name="kk" base="kk" />
-                        <Character name="徐欣怡" base="xinyi" />
-                      </div>
-                    </div>
-                  </>
-                ) : tab === "resource" ? (
-                  <>
-                    <div className="resource-heading">
-                      <h3>故事的片段</h3>
-                      <p>游戏截图、CG与角色立绘，一起看看这个世界的模样。</p>
-                    </div>
-                    <h3 className="gallery-heading">游戏实机画面</h3>
-                    <ResourceGallery
-                      images={gameScreens}
-                      onOpen={gallery}
-                      kind="screenshots"
-                    />
-                    <h3 className="gallery-heading">CG与标题</h3>
-                    <ResourceGallery
-                      images={artworkImages}
-                      onOpen={gallery}
-                      kind="artwork"
-                    />
-                    <h3 className="gallery-heading">角色立绘</h3>
-                    <ResourceGallery
-                      images={characterImages}
-                      onOpen={gallery}
-                      kind="portraits"
-                    />
-                    <p className="resource-notice">
-                      素材在此供浏览欣赏。其他使用方式请联系作者。
-                    </p>
-                    {posts.some((p) => p.category === "resource") && (
-                      <PostList
-                        posts={posts.filter((p) => p.category === "resource")}
+                      <h3 className="gallery-heading">游戏实机画面</h3>
+                      <ResourceGallery
+                        images={gameScreens}
+                        onOpen={gallery}
+                        kind="screenshots"
                       />
-                    )}
-                  </>
-                ) : (
-                  <>
-                    <div className="resource-heading">
-                      <h3>
-                        {tab === "log"
-                          ? "一款游戏，慢慢生长"
-                          : "每个阶段，都有新的想法"}
-                      </h3>
-                      <p>
-                        {tab === "log"
-                          ? "记录开发中的尝试、进展，以及值得记下的小事。"
-                          : "把不同时期对作品的感受，留在这里。"}
+                      <h3 className="gallery-heading">CG与标题</h3>
+                      <ResourceGallery
+                        images={artworkImages}
+                        onOpen={gallery}
+                        kind="artwork"
+                      />
+                      <h3 className="gallery-heading">角色立绘</h3>
+                      <ResourceGallery
+                        images={characterImages}
+                        onOpen={gallery}
+                        kind="portraits"
+                      />
+                      <p className="resource-notice">
+                        素材在此供浏览欣赏。其他使用方式请联系作者。
                       </p>
-                    </div>
-                    {loadState === "loading" ? (
-                      <ContentLoading />
-                    ) : loadState === "error" ? (
-                      <LoadError retry={loadContent} />
-                    ) : posts.some((p) => p.category === tab) ? (
-                      <PostList
-                        posts={posts.filter((p) => p.category === tab)}
-                      />
-                    ) : (
-                      <div className="article-empty">
-                        <span aria-hidden="true">✳</span>
+                      {posts.some((p) => p.category === "resource") && (
+                        <PostList
+                          posts={posts.filter((p) => p.category === "resource")}
+                        />
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      <div className="resource-heading">
+                        <h3>
+                          {panel === "log"
+                            ? "一款游戏，慢慢生长"
+                            : "每个阶段，都有新的想法"}
+                        </h3>
                         <p>
-                          {tab === "log"
-                            ? "第一篇开发日志，还在路上。"
-                            : "第一篇创作感悟，留待慢慢写下。"}
+                          {panel === "log"
+                            ? "记录开发中的尝试、进展，以及值得记下的小事。"
+                            : "把不同时期对作品的感受，留在这里。"}
                         </p>
                       </div>
-                    )}
-                  </>
-                )}
-              </div>
+                      {posts.some((p) => p.category === panel) ? (
+                        <PostList
+                          posts={posts.filter((p) => p.category === panel)}
+                        />
+                      ) : (
+                        <div className="article-empty">
+                          <span aria-hidden="true">✳</span>
+                          <p>
+                            {panel === "log"
+                              ? "第一篇开发日志，还在路上。"
+                              : "第一篇创作感悟，留待慢慢写下。"}
+                          </p>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              ))}
             </section>
             <PlaytestCallout qq={profile.qq} />
           </>
@@ -603,16 +555,12 @@ export default function Website({
         {view === "read" && (
           <section className="reading-page">
             <a
-              href={`/works?tab=${post?.category || "log"}`}
+              href={`/works/?tab=${post?.category || "log"}`}
               className="text-link"
             >
               ← 返回{post ? categories[post.category] : "我的作品"}
             </a>
-            {loadState === "loading" ? (
-              <ContentLoading />
-            ) : loadState === "error" ? (
-              <LoadError retry={loadContent} />
-            ) : post ? (
+            {post ? (
               <article>
                 <p className="eyebrow">
                   {categories[post.category]} · <DateLabel date={post.date} />
@@ -636,7 +584,7 @@ export default function Website({
             ) : (
               <div className="article-empty">
                 <h1>这篇记录暂未公开</h1>
-                <a href="/works" className="button primary">
+                <a href="/works/" className="button primary">
                   去看看作品 <Arrow />
                 </a>
               </div>
@@ -651,7 +599,7 @@ export default function Website({
         </a>
         <p>游戏、故事，以及创作路上的点滴。</p>
         <div>
-          <span>© {new Date().getFullYear()} 凌风Yuno</span>
+          <span suppressHydrationWarning>© {new Date().getFullYear()} 凌风Yuno</span>
         </div>
       </footer>
       <dialog
@@ -685,7 +633,7 @@ function Character({ name, base }: { name: string; base: string }) {
   return (
     <a
       className="character"
-      href={`/characters/${base}`}
+      href={`/characters/${base}/`}
       aria-label={`查看${name}的人物档案`}
     >
       <div className="character-image">
@@ -778,30 +726,11 @@ function PlaytestCallout({ qq }: { qq: string }) {
     </section>
   );
 }
-function ContentLoading() {
-  return (
-    <div className="content-loading" role="status" aria-label="正在加载内容">
-      <span />
-      <span />
-      <span />
-    </div>
-  );
-}
-function LoadError({ retry }: { retry: () => void }) {
-  return (
-    <div className="load-error">
-      <p>内容暂时未能加载。</p>
-      <button onClick={retry} className="text-link">
-        重新加载 ↻
-      </button>
-    </div>
-  );
-}
 function PostList({ posts }: { posts: Post[] }) {
   return (
     <div className="post-list">
       {posts.map((post) => (
-        <a className="post-row" href={`/read?id=${post.id}`} key={post.id}>
+        <a className="post-row" href={articlePath(post.id)} key={post.id}>
           <div className="post-meta">
             <span>{categories[post.category]}</span>
             <DateLabel date={post.date} />

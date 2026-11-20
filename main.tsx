@@ -1,22 +1,17 @@
-import { createRoot } from "react-dom/client";
-import Website from "./website";
+import { createRoot, hydrateRoot } from "react-dom/client";
+import Page from "./page";
+import { articlePath, posts } from "./site";
 import "./globals.css";
 
-const route = window.location.pathname.replace(/\/+$/, "");
-const pages = {
-  "": { view: "home" },
-  "/works": { view: "works" },
-  "/about": { view: "about" },
-  "/read": { view: "read" },
-  "/characters/kk": { view: "character", characterSlug: "kk" },
-  "/characters/xinyi": { view: "character", characterSlug: "xinyi" },
-} as const;
-const page = pages[route as keyof typeof pages];
-createRoot(document.getElementById("root")!).render(
-  page ? <Website {...page} /> : (
-    <main className="site-main reading-page">
-      <h1>找不到这一页</h1>
-      <a className="text-link" href="/">返回小屋</a>
-    </main>
-  ),
-);
+const path = window.location.pathname.replace(/\/+$/, "") + "/";
+const root = document.getElementById("root")!;
+const legacyId = path === "/read/" ? new URLSearchParams(location.search).get("id") : null;
+const legacyPost = legacyId && posts.find((post) => post.id === legacyId);
+
+if (legacyPost) {
+  location.replace(articlePath(legacyPost.id) + location.hash);
+} else {
+  const page = <Page path={path} />;
+  if (root.firstElementChild) hydrateRoot(root, page);
+  else createRoot(root).render(page);
+}

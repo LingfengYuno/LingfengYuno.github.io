@@ -1,4 +1,4 @@
-import { copyFile, mkdir, readdir, writeFile } from "node:fs/promises";
+import { copyFile, mkdir, readdir } from "node:fs/promises";
 
 if (process.argv[2] === "assets") {
   await mkdir("public/images", { recursive: true });
@@ -13,11 +13,16 @@ if (process.argv[2] === "assets") {
     }
   }
 } else {
-  for (const route of ["works", "about", "read", "characters/kk", "characters/xinyi"]) {
-    const folder = "dist/" + route;
-    await mkdir(folder, { recursive: true });
-    await copyFile("dist/index.html", folder + "/index.html");
-  }
-  await copyFile("dist/index.html", "dist/404.html");
-  await writeFile("dist/.nojekyll", "");
+  const { build } = await import("vite");
+  const output = "node_modules/.cache/yuno-prerender";
+  await build({
+    publicDir: false,
+    build: {
+      ssr: "prerender.tsx",
+      outDir: output,
+      emptyOutDir: true,
+      rolldownOptions: { output: { entryFileNames: "prerender.mjs" } },
+    },
+  });
+  await import("./" + output + "/prerender.mjs");
 }

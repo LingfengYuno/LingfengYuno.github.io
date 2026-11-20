@@ -90,7 +90,7 @@ export default function CharacterProfile({ slug }: { slug: "kk" | "xinyi" }) {
   const group = character.groups[groupIndex];
   return (
     <div className={`character-profile ${slug}`}>
-      <a href="/works?tab=intro" className="text-link archive-back">
+      <a href="/works/" className="text-link archive-back">
         ← 返回作品介绍
       </a>
       <section className="archive-hero">
@@ -195,12 +195,12 @@ export default function CharacterProfile({ slug }: { slug: "kk" | "xinyi" }) {
       </section>
       <div className="archive-next">
         <a
-          href={`/characters/${slug === "kk" ? "xinyi" : "kk"}`}
+          href={`/characters/${slug === "kk" ? "xinyi" : "kk"}/`}
           className="text-link"
         >
           认识{slug === "kk" ? "徐欣怡" : "kk"} ↗
         </a>
-        <a href="/works#playtest" className="button primary">
+        <a href="/works/#playtest" className="button primary">
           加入QQ群试玩 ↗
         </a>
       </div>
