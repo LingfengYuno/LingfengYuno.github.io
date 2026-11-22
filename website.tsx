@@ -166,7 +166,7 @@ export default function Website({
         </nav>
       )}
 
-      <main id="main" className="site-main" inert={menuOpen || undefined}>
+      <main id="main" className={view === "guestbook" ? "site-main site-main-guestbook" : "site-main"} inert={menuOpen || undefined}>
         {view === "guestbook" && <Guestbook />}
         {view === "character" && <CharacterProfile slug={characterSlug} />}
         {view === "home" && (
