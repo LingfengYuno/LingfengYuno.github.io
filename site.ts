@@ -20,6 +20,7 @@ export const pages = {
   "/": { view: "home" },
   "/works/": { view: "works" },
   "/about/": { view: "about" },
+  "/guestbook/": { view: "guestbook" },
   "/characters/kk/": { view: "character", characterSlug: "kk" },
   "/characters/xinyi/": { view: "character", characterSlug: "xinyi" },
 } as const;

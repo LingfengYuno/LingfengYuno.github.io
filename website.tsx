@@ -2,10 +2,11 @@
 
 import { useEffect, useRef, useState } from "react";
 import CharacterProfile from "./character-profile";
+import Guestbook from "./guestbook";
 import { articlePath, posts, profile, type Post } from "./site";
 import { gameScreens, characterImages, artworkImages } from "./gallery";
 
-type View = "home" | "works" | "about" | "read" | "character";
+type View = "home" | "works" | "about" | "read" | "character" | "guestbook";
 type Category = "intro" | "log" | "thought" | "resource";
 const categories: Record<Category, string> = {
   intro: "作品介绍",
@@ -104,6 +105,7 @@ export default function Website({
       active: view === "works" || view === "read" || view === "character",
     },
     { href: "/about/", label: "关于我", active: view === "about" },
+    { href: "/guestbook/", label: "留言板", active: view === "guestbook" },
   ];
 
   return (
@@ -165,6 +167,7 @@ export default function Website({
       )}
 
       <main id="main" className="site-main" inert={menuOpen || undefined}>
+        {view === "guestbook" && <Guestbook />}
         {view === "character" && <CharacterProfile slug={characterSlug} />}
         {view === "home" && (
           <>

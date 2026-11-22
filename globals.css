@@ -1,3 +1,49 @@
+.guestbook {
+  width: min(720px, calc(100% - 40px));
+  margin: 70px auto 96px;
+}
+.guestbook h1 { font-size: clamp(2rem, 7vw, 3.5rem); }
+.guestbook-form {
+  background: var(--soft);
+  padding: clamp(16px, 5vw, 32px);
+  border-radius: 20px;
+}
+.guestbook-form fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
+.guestbook-form legend { font-weight: 650; padding: 0; }
+.guestbook-form label { display: block; margin-top: 14px; }
+.guestbook-fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); gap: 0 16px; }
+.guestbook-form input:not([type="radio"]), .guestbook-form select, .guestbook-form textarea {
+  display: block;
+  width: 100%;
+  background: var(--paper);
+  color: var(--ink);
+  border: 1px solid #a2aaa0;
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-top: 4px;
+}
+.guestbook-form textarea { resize: vertical; }
+.guestbook-form .guestbook-visibility { margin: 16px 0; }
+.guestbook-visibility label { display: inline-block; margin: 4px 18px 0 0; }
+.guestbook-trap { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.guestbook-status { margin: 12px 0 0; min-height: 1.75em; }
+.guestbook-list { margin-top: 48px; }
+.guestbook-filters { display: flex; gap: 8px; margin-bottom: 16px; }
+.guestbook-filters button {
+  background: var(--paper);
+  color: var(--ink);
+  border: 1px solid #a2aaa0;
+  border-radius: 20px;
+  padding: 4px 14px;
+  cursor: pointer;
+}
+.guestbook-filters button[aria-pressed="true"] { background: var(--accent); }
+.guestbook-list article { border-top: 1px solid var(--line); padding: 16px 0; overflow-wrap: anywhere; }
+.guestbook-list article header { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; }
+.guestbook-list article p { white-space: pre-wrap; }
+.guestbook-reply { background: var(--soft); padding: 12px 16px; border-radius: 8px; }
+.guestbook-reply p { margin: 0; }
+
 @font-face {
   font-family: Geist;
   src: url("/fonts/geist-latin.woff2") format("woff2");

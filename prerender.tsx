@@ -21,6 +21,10 @@ const metadata = {
     description: "认识独立游戏创作者凌风Yuno，了解个人简介、游戏创作经历、QQ群与联系邮箱。",
     image: origin + "/images/avatar.webp",
   },
+  "/guestbook/": {
+    title: "留言板 · 凌风Yuno的小屋",
+    description: "给凌风Yuno或剧情游戏《无法抵达的现在》留言，浏览公开留言和作者回复。",
+  },
   "/characters/kk/": {
     title: "kk ·《无法抵达的现在》人物档案",
     description: "kk是《无法抵达的现在》中拥有未来视的银发少女。浏览她的人物档案、角色立绘与背景故事。",
